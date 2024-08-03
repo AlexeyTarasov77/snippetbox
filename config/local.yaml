@@ -1,0 +1,12 @@
+mode: "local"
+
+db:
+  user: root
+  password: root
+  name: snippetbox
+  host: localhost
+  port: 3306
+
+http_server:
+  port: 8000
+  host: localhost
