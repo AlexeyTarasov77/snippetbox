@@ -4,7 +4,7 @@
     <a href="/snippet/create">New snippet</a>
     {{if .User}}
     <form action="/user/logout" method="post">
-        <input type="submit" value="Logout">
+       <button class="nav-item">Logout</button>
     </form>
     {{else}}
     <a href="/user/login">Login</a>

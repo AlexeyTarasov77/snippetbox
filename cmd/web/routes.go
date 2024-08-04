@@ -14,8 +14,11 @@ func (app *Application) registerRoutes(router *chi.Mux) {
 		router.Use(app.sessionManager.LoadAndSave, middlewares.AuthMiddleware(app.logger, app.sessionManager, app.users))
 		router.Get("/", app.home)
 		router.Route("/snippet", func(router chi.Router) {
-			router.Post("/create", app.snippetCreatePost)
-			router.Get("/create", app.snippetCreate)
+			router.Route("/create", func(router chi.Router) {
+				router.Use(middlewares.LoginRequiredMiddleware(app.logger, app.sessionManager, app.users))
+				router.Post("/", app.snippetCreatePost)
+				router.Get("/", app.snippetCreate)
+			})
 			router.Get("/view/{id}", app.snippetView)
 		})
 		router.Route("/user", func(router chi.Router) {

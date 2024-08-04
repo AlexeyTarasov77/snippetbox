@@ -17,8 +17,8 @@ type BaseForm struct {
 
 func (bf *BaseForm) Validate(form any) {
 	validate := validator.New()
+	bf.FieldErrors = make(map[string]string)
 	if err := validate.Struct(form); err != nil {
-		bf.FieldErrors = make(map[string]string)
 		for _, e := range err.(validator.ValidationErrors) {
 			bf.FieldErrors[strings.ToLower(e.StructField())] = validatorErrs.GetErrorMsgForField(form, e)
 		}

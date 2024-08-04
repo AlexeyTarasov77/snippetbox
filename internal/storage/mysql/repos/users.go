@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
 	"snippetbox.proj.net/internal/storage"
 	"snippetbox.proj.net/internal/storage/models"
@@ -21,7 +22,11 @@ func (model *UserModel) Insert(username, email, password string) (int64, error) 
 	stmt := `INSERT INTO users (username, email, password) 
 		VALUES (?, ?, ?)`
 	res, err := model.DB.Exec(stmt, username, email, passwordHash)
+	var mySQLErr *mysql.MySQLError
 	if err != nil {
+		if errors.As(err, &mySQLErr) && mySQLErr.Number == 1062 {
+			return 0, storage.ErrDuplicateEmail
+		}
 		return 0, err
 	}
 	id, err := res.LastInsertId()
@@ -34,7 +39,10 @@ func (model *UserModel) Insert(username, email, password string) (int64, error) 
 func (model *UserModel) Authenticate(email, password string) (*models.User, error) {
 	user, err := model.GetByEmail(email)
 	if err != nil {
-		return nil, storage.ErrInvalidCredentials
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, storage.ErrInvalidCredentials
+		}
+		return nil, err
 	}
 	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(password)); err != nil {
 		return nil, storage.ErrInvalidCredentials
@@ -43,7 +51,7 @@ func (model *UserModel) Authenticate(email, password string) (*models.User, erro
 }
 
 func (model *UserModel) GetByEmail(email string) (*models.User, error) {
-	res := model.DB.QueryRow("SELECT id, username, email, password, created, is_active FROM users WHERE email = ?", email)
+	res := model.DB.QueryRow("SELECT id, username, email, password, created, is_active FROM users WHERE email = ? AND is_active = 1", email)
 	var user models.User
 	err := res.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Created, &user.IsActive)
 	if err != nil {
@@ -56,7 +64,7 @@ func (model *UserModel) GetByEmail(email string) (*models.User, error) {
 }
 
 func (model *UserModel) Get(id int) (*models.User, error) {
-	res := model.DB.QueryRow("SELECT id, username, email, password, created, is_active FROM users WHERE id = ?", id)
+	res := model.DB.QueryRow("SELECT id, username, email, password, created, is_active FROM users WHERE id = ? AND is_active = 1", id)
 	var user models.User
 	err := res.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Created, &user.IsActive)
 	if err != nil {

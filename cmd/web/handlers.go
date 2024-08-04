@@ -7,12 +7,12 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"snippetbox.proj.net/internal/api/constants"
 	"snippetbox.proj.net/internal/api/forms"
 	"snippetbox.proj.net/internal/api/response"
 	"snippetbox.proj.net/internal/storage"
 )
 
-// TODO: Вынести ключи сессии в контсанты (flash, userID)
 
 func (app *Application) home(w http.ResponseWriter, r *http.Request) {
 	latestSnippets, err := app.snippets.Latest(10)
@@ -97,6 +97,11 @@ func (app *Application) userSignup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) userSignupPost(w http.ResponseWriter, r *http.Request) {
+	rerenderTemplate := func(form forms.UserSignupForm) {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, "signup.html", data, http.StatusUnprocessableEntity)
+	}
 	if err := r.ParseForm(); err != nil {
 		app.logger.Error("Error parsing form", "err", err.Error())
 		response.HttpError(w, "", http.StatusBadRequest)
@@ -109,13 +114,16 @@ func (app *Application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !form.IsValid(form) {
-		data := app.newTemplateData(r)
-		data.Form = form
-		app.render(w, "signup.html", data, http.StatusUnprocessableEntity)
+		rerenderTemplate(form)
 		return
 	}
 	id, err := app.users.Insert(form.Username, form.Email, form.Password)
 	if err != nil {
+		if errors.Is(err, storage.ErrDuplicateEmail) {
+			form.FieldErrors["email"] = "Address is already in use"
+			rerenderTemplate(form)
+			return
+		}
 		app.logger.Error("Error inserting user", "err", err.Error())
 		response.HttpError(w, "")
 		return
@@ -125,7 +133,9 @@ func (app *Application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
-	app.sessionManager.Remove(r.Context(), "userID")
+	app.sessionManager.Remove(r.Context(), constants.UserIDCtxKey)
+	app.sessionManager.Put(r.Context(), constants.FlashCtxKey, "You've been logged out successfully!")
+	app.sessionManager.RenewToken(r.Context())
 	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
 
@@ -163,7 +173,8 @@ func (app *Application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 		app.render(w, "login.html", data, http.StatusUnprocessableEntity)
 		return
 	}
-	app.sessionManager.Put(r.Context(), "userID", user.ID)
-	app.sessionManager.Put(r.Context(), "flash", fmt.Sprintf("Hello, %s! You've login succesfully", user.Username))
+	app.sessionManager.RenewToken(r.Context())
+	app.sessionManager.Put(r.Context(), constants.UserIDCtxKey, user.ID)
+	app.sessionManager.Put(r.Context(), constants.FlashCtxKey, fmt.Sprintf("Hello, %s! You've login succesfully", user.Username))
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
