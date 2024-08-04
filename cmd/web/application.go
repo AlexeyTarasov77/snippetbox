@@ -11,18 +11,23 @@ import (
 
 type Application struct {
 	logger        *slog.Logger
-	snippets      storage.ModelInterface
+	snippets      storage.SnippetsStorage
+	users         storage.UsersStorage
 	templateCache map[string]*template.Template
 	formDecoder       *schema.Decoder
 	sessionManager *scs.SessionManager
 }
 
 func NewApplication(
-	logger *slog.Logger, snippets storage.ModelInterface,
-	templateCache map[string]*template.Template, sessionManager *scs.SessionManager,
+	logger *slog.Logger, 
+	snippets storage.SnippetsStorage,
+	users storage.UsersStorage,
+	templateCache map[string]*template.Template, 
+	sessionManager *scs.SessionManager,
 ) *Application {
 	return &Application{
 		logger:        logger,
+		users:         users,
 		snippets:      snippets,
 		templateCache: templateCache,
 		formDecoder:   schema.NewDecoder(),

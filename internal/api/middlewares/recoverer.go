@@ -8,16 +8,18 @@ import (
 )
 
 
-func Recoverer(next http.Handler) http.Handler {
-	return http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			defer func () {
-				if err := recover(); err != nil {
-					slog.Error("Recovered from panic", "msg", err)
-					response.HttpError(w, "")
-				}
-			}()
-			next.ServeHTTP(w, r)
-		},
-	)
+func Recoverer(logger *slog.Logger) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				defer func () {
+					if err := recover(); err != nil {
+						logger.Error("Recovered from panic", "msg", err)
+						response.HttpError(w, "")
+					}
+				}()
+				next.ServeHTTP(w, r)
+			},
+		)
+	}
 }

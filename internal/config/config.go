@@ -2,6 +2,8 @@ package config
 
 import (
 	"errors"
+	"time"
+
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -15,6 +17,9 @@ type Config struct {
 type HTTPServer struct {
 	Host string `yaml:"host" env-default:"localhost"`
 	Port int `yaml:"port" env-default:"8000"`
+	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"120"`
+	ReadTimeout time.Duration `yaml:"read_timeout" env-default:"5"`
+	WriteTimeout time.Duration `yaml:"write_timeout" env-default:"5"`
 }
 
 type DB struct {

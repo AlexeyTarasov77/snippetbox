@@ -10,3 +10,6 @@ db:
 http_server:
   port: 8000
   host: localhost
+  idle_timeout: "30s"
+  read_timeout: "5s"
+  write_timeout: "10s"

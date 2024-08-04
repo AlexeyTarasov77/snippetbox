@@ -2,26 +2,30 @@ package middlewares
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 
-	"snippetbox.proj.net/internal/api/response"
+	"github.com/alexedwards/scs/v2"
+	"snippetbox.proj.net/internal/storage/models"
 )
 
-// TODO: Cделать авторизацию по jwt токенам
-
-func isValidToken(token string) bool {
-	return token == "abc123"
+type UserGettableByID interface {
+	Get(int) (*models.User, error)
 }
 
-func authMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			if token := r.Header.Get("Authorization"); token == "" || !isValidToken(token) {
-				response.HttpError(w, "", http.StatusUnauthorized)
-				return
-			}
-			ctx := context.WithValue(r.Context(), "user", "someuser")
-			next.ServeHTTP(w, r.WithContext(ctx))
-		},
-	)
+func AuthMiddleware(logger *slog.Logger, sessionManager *scs.SessionManager, storage UserGettableByID) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				userId := sessionManager.GetInt(r.Context(), "userID")
+				var user *models.User
+				user, err := storage.Get(userId)
+				if err != nil {
+					user = nil
+				}
+				r = r.WithContext(context.WithValue(r.Context(), "user", user))
+				next.ServeHTTP(w, r)
+			},
+		)
+	}
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 
@@ -11,7 +12,7 @@ import (
 
 	"snippetbox.proj.net/internal/config"
 	"snippetbox.proj.net/internal/storage/mysql"
-	"snippetbox.proj.net/internal/storage/mysql/models"
+	"snippetbox.proj.net/internal/storage/mysql/repos"
 	"snippetbox.proj.net/internal/templates"
 
 	"github.com/alexedwards/scs/mysqlstore"
@@ -54,11 +55,19 @@ func main() {
 	sessionManager := scs.New()
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Cookie.Secure = true
-	app := NewApplication(logger, &models.SnippetModel{DB: db}, templateCache, sessionManager)
+	app := NewApplication(logger, &repos.SnippetModel{DB: db}, &repos.UserModel{DB: db}, templateCache, sessionManager)
 	defer db.Close()
 	router := chi.NewRouter()
 	app.registerRoutes(router)
-	server := http.Server{Addr: serverAddr, Handler: router}
+	tlsConfig := &tls.Config{
+        CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+    }
+	server := http.Server{
+		Addr: serverAddr, Handler: router, TLSConfig: tlsConfig,
+		IdleTimeout: config.HTTPServer.IdleTimeout,
+		ReadTimeout: config.HTTPServer.ReadTimeout,
+		WriteTimeout: config.HTTPServer.WriteTimeout,
+	}
 	slog.Info(fmt.Sprintf("Starting server on https://%s", serverAddr))
 	if err := server.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem"); err != nil {
 		slog.Error(fmt.Sprintf("Server crashed with error %s", err))

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"snippetbox.proj.net/internal/api/response"
+	"snippetbox.proj.net/internal/storage/models"
 	"snippetbox.proj.net/internal/templates"
 )
 
@@ -33,8 +34,13 @@ func (app *Application) render(
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templates.TemplateData {
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		user = nil
+	}
 	return &templates.TemplateData{
 		CurrentYear: time.Now().Year(),
 		Flash: app.sessionManager.PopString(r.Context(), "flash"),
+		User:  user,
 	}
 }

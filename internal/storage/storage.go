@@ -1,17 +1,16 @@
 package storage
 
-import "time"
+import "snippetbox.proj.net/internal/storage/models"
 
-type ModelInterface interface {
+type SnippetsStorage interface {
 	Insert(title, content string, expires int) (int64, error)
-	Get(id int) (*Snippet, error)
-	Latest(n int) ([]*Snippet, error)
+	Get(id int) (*models.Snippet, error)
+	Latest(n int) ([]*models.Snippet, error)
 }
 
-type Snippet struct {
-	ID      int
-	Title   string
-	Content string
-	Created time.Time
-	Expires time.Time
+type UsersStorage interface {
+	Insert(username, email, password string) (int64, error)
+	Authenticate(email, password string) (*models.User, error)
+	GetByEmail(email string) (*models.User, error)
+	Get(id int) (*models.User, error)
 }

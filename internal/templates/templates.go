@@ -5,15 +5,16 @@ import (
 	"path/filepath"
 	"time"
 
-	"snippetbox.proj.net/internal/storage"
+	"snippetbox.proj.net/internal/storage/models"
 )
 
 type TemplateData struct {
 	CurrentYear int
-	Snippet 	*storage.Snippet
-	Snippets 	[]*storage.Snippet
+	Snippet 	*models.Snippet
+	Snippets 	[]*models.Snippet
 	Form        any
 	Flash       string
+	User        *models.User
 }
 
 // func (tmplData *TemplateData) IsRequiredField(fieldName string) bool {

@@ -11,6 +11,7 @@ import (
 )
 
 type BaseForm struct {
+	NonFieldErrors []string `schema:"-" validate:"omitempty"`
 	FieldErrors map[string]string `schema:"-" validate:"omitempty"`
 }
 

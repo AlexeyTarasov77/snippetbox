@@ -1,5 +1,4 @@
 import sys
-from contextlib import ExitStack
 
 import faker
 import mysql.connector
@@ -31,7 +30,7 @@ def fill_table(cursor: MySQLCursorAbstract) -> None:
         print("truncated")
         cursor.executemany(
             "INSERT INTO snippets (title, content) VALUES (%s, %s)",
-            [(fake.sentence(nb_words=3), fake.text()) for _ in range(10)],
+            ((fake.sentence(nb_words=3), fake.text()) for _ in range(10)),
         )
         print("INSERTED")
     except mysql.connector.Error as err:
@@ -39,8 +38,6 @@ def fill_table(cursor: MySQLCursorAbstract) -> None:
 
 
 if __name__ == "__main__":
-    # conn = mysql.connector.connect(user="root", password="root", database="snippetbox")
-    # cursor = conn.cursor()
     with (
         mysql.connector.connect(user="root", password="root", database="snippetbox") as conn,
         conn.cursor() as cursor,

@@ -3,6 +3,8 @@ package mysql
 import (
 	"database/sql"
 	"log/slog"
+
+	"snippetbox.proj.net/internal/storage/models"
 )
 
 func New(dsn string) (*sql.DB, error) {
@@ -17,15 +19,7 @@ func New(dsn string) (*sql.DB, error) {
 		return nil, err
 	}
 	slog.Info("Database connection established")
-	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS snippets (
-			id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-			title varchar(100) NOT NULL,
-			content text NOT NULL,
-			created datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			expires datetime NOT NULL
-		)
-	`)
+	_, err = db.Exec(models.SnippetQuery)
 	if err != nil {
 		slog.Error("Error creating snippets table", "msg", err)
 		return nil, err
@@ -37,9 +31,14 @@ func New(dsn string) (*sql.DB, error) {
 			expiry TIMESTAMP(6) NOT NULL
 		);
 	`)
-	_, err2 := db.Exec(`CREATE INDEX IF NOT EXISTS sessions_expiry_idx ON sessions (expiry);`)
-	if err != nil{
-		slog.Error("Error creating sessions table", "msg", err2)
+	db.Exec(`CREATE INDEX sessions_expiry_idx ON sessions (expiry);`)
+	if err != nil {
+		slog.Error("Error creating sessions table", "msg", err)
+		return nil, err
+	}
+	_, err = db.Exec(models.UserQuery)
+	if err != nil {
+		slog.Error("Error creating users table", "msg", err)
 		return nil, err
 	}
 	slog.Info("Database tables created")
