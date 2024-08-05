@@ -14,11 +14,15 @@ type UserGettableByID interface {
 	Get(int) (*models.User, error)
 }
 
-func AuthMiddleware(logger *slog.Logger, sessionManager *scs.SessionManager, storage UserGettableByID) func(next http.Handler) http.Handler {
+func AuthMiddleware(
+	logger *slog.Logger,
+	sessionManager *scs.SessionManager,
+	storage UserGettableByID,
+) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				userId := sessionManager.GetInt(r.Context(), constants.UserIDCtxKey)
+				userId := sessionManager.GetInt(r.Context(), string(constants.UserIDCtxKey))
 				var user *models.User
 				user, err := storage.Get(userId)
 				if err != nil {

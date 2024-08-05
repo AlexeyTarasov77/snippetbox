@@ -1,8 +1,9 @@
 package constants
 
+type CtxKey string
 
 const (
-	FlashCtxKey = "flash"
-	UserCtxKey = "user"
-	UserIDCtxKey = "userID"
+	FlashCtxKey = CtxKey("flash")
+	UserCtxKey = CtxKey("user")
+	UserIDCtxKey = CtxKey("userID")
 )

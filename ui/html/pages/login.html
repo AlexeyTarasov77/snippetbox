@@ -3,6 +3,7 @@
 {{define "main"}}
 <h2>Login</h2>
     <form action="/user/login" method="post">
+        <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
         {{with .Form.NonFieldErrors}}
         <div class="error">
             {{range .}}

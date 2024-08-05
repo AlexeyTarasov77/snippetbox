@@ -15,6 +15,7 @@ type TemplateData struct {
 	Form        any
 	Flash       string
 	User        *models.User
+	CSRFToken 	string
 }
 
 // func (tmplData *TemplateData) IsRequiredField(fieldName string) bool {

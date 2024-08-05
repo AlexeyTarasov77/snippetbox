@@ -4,6 +4,7 @@
     <a href="/snippet/create">New snippet</a>
     {{if .User}}
     <form action="/user/logout" method="post">
+       <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
        <button class="nav-item">Logout</button>
     </form>
     {{else}}

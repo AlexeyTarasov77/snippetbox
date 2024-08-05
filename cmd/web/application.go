@@ -25,12 +25,14 @@ func NewApplication(
 	templateCache map[string]*template.Template, 
 	sessionManager *scs.SessionManager,
 ) *Application {
+	decoder := schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
 	return &Application{
 		logger:        logger,
 		users:         users,
 		snippets:      snippets,
 		templateCache: templateCache,
-		formDecoder:   schema.NewDecoder(),
+		formDecoder:   decoder,
 		sessionManager: sessionManager,
 	}
 }

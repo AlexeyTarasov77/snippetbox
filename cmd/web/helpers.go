@@ -9,6 +9,7 @@ import (
 	"snippetbox.proj.net/internal/api/response"
 	"snippetbox.proj.net/internal/storage/models"
 	"snippetbox.proj.net/internal/templates"
+	"github.com/justinas/nosurf"
 )
 
 func (app *Application) render(
@@ -42,5 +43,6 @@ func (app *Application) newTemplateData(r *http.Request) *templates.TemplateData
 		CurrentYear: time.Now().Year(),
 		Flash: app.sessionManager.PopString(r.Context(), "flash"),
 		User:  user,
+		CSRFToken: nosurf.Token(r),
 	}
 }

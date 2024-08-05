@@ -11,13 +11,15 @@ func (app *Application) registerRoutes(router *chi.Mux) {
 	router.NotFound(app.snippetNotFound)
 	router.Use(middlewares.Recoverer(app.logger), middlewares.SecureHeaders)
 	router.Route("/", func(router chi.Router) {
-		router.Use(app.sessionManager.LoadAndSave, middlewares.AuthMiddleware(app.logger, app.sessionManager, app.users))
+		router.Use(app.sessionManager.LoadAndSave)
+		router.Use(middlewares.AuthMiddleware(app.logger, app.sessionManager, app.users))
+		router.Use(middlewares.NoSurfMiddleware)
 		router.Get("/", app.home)
 		router.Route("/snippet", func(router chi.Router) {
-			router.Route("/create", func(router chi.Router) {
+			router.Route("/", func(router chi.Router) { // protected routes
 				router.Use(middlewares.LoginRequiredMiddleware(app.logger, app.sessionManager, app.users))
-				router.Post("/", app.snippetCreatePost)
-				router.Get("/", app.snippetCreate)
+				router.Post("/create", app.snippetCreatePost)
+				router.Get("/create", app.snippetCreate)
 			})
 			router.Get("/view/{id}", app.snippetView)
 		})
@@ -26,7 +28,9 @@ func (app *Application) registerRoutes(router *chi.Mux) {
 			router.Post("/signup", app.userSignupPost)
 			router.Get("/login", app.userLogin)
 			router.Post("/login", app.userLoginPost)
-			router.Post("/logout", app.userLogoutPost)
+			router.With(
+				middlewares.LoginRequiredMiddleware(app.logger, app.sessionManager, app.users),
+			).Post("/logout", app.userLogoutPost)
 		})
 	})
 	router.Handle(

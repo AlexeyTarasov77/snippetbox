@@ -55,7 +55,13 @@ func main() {
 	sessionManager := scs.New()
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Cookie.Secure = true
-	app := NewApplication(logger, &repos.SnippetModel{DB: db}, &repos.UserModel{DB: db}, templateCache, sessionManager)
+	app := NewApplication(
+		logger,
+		&repos.SnippetModel{DB: db},
+		&repos.UserModel{DB: db},
+		templateCache,
+		sessionManager,
+	)
 	defer db.Close()
 	router := chi.NewRouter()
 	app.registerRoutes(router)

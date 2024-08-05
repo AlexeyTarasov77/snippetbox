@@ -133,8 +133,8 @@ func (app *Application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
-	app.sessionManager.Remove(r.Context(), constants.UserIDCtxKey)
-	app.sessionManager.Put(r.Context(), constants.FlashCtxKey, "You've been logged out successfully!")
+	app.sessionManager.Remove(r.Context(), string(constants.UserIDCtxKey))
+	app.sessionManager.Put(r.Context(), string(constants.FlashCtxKey), "You've been logged out successfully!")
 	app.sessionManager.RenewToken(r.Context())
 	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
@@ -151,6 +151,7 @@ func (app *Application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 		response.HttpError(w, "", http.StatusBadRequest)
 		return
 	}
+	app.logger.Debug("Form parsed", "data", r.PostForm)
 	var form forms.UserLoginForm
 	if err := app.formDecoder.Decode(&form, r.PostForm); err != nil {
 		app.logger.Error("Error decoding form", "err", err.Error())
@@ -174,7 +175,11 @@ func (app *Application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	app.sessionManager.RenewToken(r.Context())
-	app.sessionManager.Put(r.Context(), constants.UserIDCtxKey, user.ID)
-	app.sessionManager.Put(r.Context(), constants.FlashCtxKey, fmt.Sprintf("Hello, %s! You've login succesfully", user.Username))
+	app.sessionManager.Put(
+		r.Context(),
+		string(constants.FlashCtxKey),
+		fmt.Sprintf("Hello, %s! You've login succesfully", user.Username),
+	)
+	app.sessionManager.Put(r.Context(), string(constants.UserIDCtxKey), user.ID)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

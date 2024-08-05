@@ -9,11 +9,15 @@ import (
 	"snippetbox.proj.net/internal/api/response"
 )
 
-func LoginRequiredMiddleware(logger *slog.Logger, sessionManager *scs.SessionManager, storage UserGettableByID, _shouldRedirect ...bool) func(next http.Handler) http.Handler {
+func LoginRequiredMiddleware(
+	logger *slog.Logger,
+    sessionManager *scs.SessionManager,
+	storage UserGettableByID, _shouldRedirect ...bool,
+) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				userId := sessionManager.GetInt(r.Context(), constants.UserIDCtxKey)
+				userId := sessionManager.GetInt(r.Context(), string(constants.UserIDCtxKey))
 				shouldRedirect := true
 				if len(_shouldRedirect) > 0 {
 					shouldRedirect = _shouldRedirect[0]
@@ -26,6 +30,7 @@ func LoginRequiredMiddleware(logger *slog.Logger, sessionManager *scs.SessionMan
 					}
                    return
 				}
+				w.Header().Add("Cache-Control", "no-store")
 				next.ServeHTTP(w, r)
 			},
 		)
