@@ -17,7 +17,6 @@ import (
 
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
-	"github.com/go-chi/chi/v5"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -63,15 +62,14 @@ func main() {
 		sessionManager,
 	)
 	defer db.Close()
-	router := chi.NewRouter()
-	app.registerRoutes(router)
+	router := app.routes()
 	tlsConfig := &tls.Config{
-        CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
-    }
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+	}
 	server := http.Server{
 		Addr: serverAddr, Handler: router, TLSConfig: tlsConfig,
-		IdleTimeout: config.HTTPServer.IdleTimeout,
-		ReadTimeout: config.HTTPServer.ReadTimeout,
+		IdleTimeout:  config.HTTPServer.IdleTimeout,
+		ReadTimeout:  config.HTTPServer.ReadTimeout,
 		WriteTimeout: config.HTTPServer.WriteTimeout,
 	}
 	slog.Info(fmt.Sprintf("Starting server on https://%s", serverAddr))

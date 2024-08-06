@@ -2,6 +2,7 @@ package main
 
 import (
 	"html/template"
+	"io"
 	"log/slog"
 
 	"github.com/alexedwards/scs/v2"
@@ -34,5 +35,11 @@ func NewApplication(
 		templateCache: templateCache,
 		formDecoder:   decoder,
 		sessionManager: sessionManager,
+	}
+}
+
+func NewTestApplication() *Application {
+	return &Application{
+		logger:  slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{})),
 	}
 }

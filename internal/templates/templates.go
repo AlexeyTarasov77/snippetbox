@@ -2,10 +2,12 @@ package templates
 
 import (
 	"html/template"
+	"io/fs"
 	"path/filepath"
 	"time"
 
 	"snippetbox.proj.net/internal/storage/models"
+	"snippetbox.proj.net/ui"
 )
 
 type TemplateData struct {
@@ -23,11 +25,19 @@ type TemplateData struct {
 // 	if !found {
 // 		panic(fmt.Sprintf("Field %s not found in type %s", fieldName, reflect.TypeOf(tmplData.Form).Name()))
 // 	}
-// 	return field.Tag.Get("required") != ""
+// 	if rules := field.Tag.Get("validate"); rules != "" {
+// 		if strings.Contains(rules, "required") {
+// 			return true
+// 		}
+// 	}
+// 	return false
 // }
 
 func humanDate(t time.Time) string {
-	return t.Format("02 Jan 2006 at 15:04")
+	if t.IsZero() {
+		return ""
+	}
+	return t.UTC().Format("02 Jan 2006 at 15:04")
 }
 
 var funcMap = template.FuncMap{
@@ -36,20 +46,20 @@ var funcMap = template.FuncMap{
 
 func NewTemplateCache() (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
-	pages, err := filepath.Glob("ui/html/pages/*.html")
+	pages, err := fs.Glob(ui.Files, "html/pages/*.html")
 	if err != nil {
 		return nil, err
 	}
-	partials, err := filepath.Glob("ui/html/partials/*.html")
+	partials, err := fs.Glob(ui.Files, "html/partials/*.html")
 	if err != nil {
 		return nil, err
 	}
 
 	for _, path := range pages {
 		filename := filepath.Base(path)
-		relevantFiles := append([]string{"ui/html/base.html"}, partials...)
+		relevantFiles := append([]string{"html/base.html"}, partials...)
 		relevantFiles = append(relevantFiles, path)
-		parsed, err := template.New(filename).Funcs(funcMap).ParseFiles(relevantFiles...)
+		parsed, err := template.New(filename).Funcs(funcMap).ParseFS(ui.Files, relevantFiles...)
 		if err != nil {
 			return nil, err
 		}

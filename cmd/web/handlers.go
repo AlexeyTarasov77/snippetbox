@@ -61,7 +61,6 @@ func (app *Application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		Expires: 1,
 	}
 	app.render(w, "create.html", data)
-
 }
 
 func (app *Application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -87,6 +86,7 @@ func (app *Application) snippetView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) snippetNotFound(w http.ResponseWriter, r *http.Request) {
+	app.logger.Info("Not found", "path", r.URL.Path)
 	app.render(w, "404.html", app.newTemplateData(r))
 }
 
@@ -182,4 +182,8 @@ func (app *Application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	)
 	app.sessionManager.Put(r.Context(), string(constants.UserIDCtxKey), user.ID)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (app *Application) ping(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
 }
