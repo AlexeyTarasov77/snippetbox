@@ -3,8 +3,7 @@ package templates
 import (
 	"testing"
 	"time"
-
-	"snippetbox.proj.net/internal/lib/tests/helpers"
+	"github.com/stretchr/testify/assert"
 )
 
 
@@ -32,7 +31,7 @@ func TestHumanDate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			helpers.Equal(t, humanDate(tc.tm), tc.expected)
+			assert.Equal(t, humanDate(tc.tm), tc.expected)
 		})
 	}
 }

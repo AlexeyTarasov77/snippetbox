@@ -5,26 +5,27 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"snippetbox.proj.net/internal/lib/tests/helpers"
+	"github.com/stretchr/testify/assert"
 )
 
 
 func TestSecureHeaders(t *testing.T) {
+	t.Parallel()
 	recorder := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         w.Write([]byte("OK"))
     })
-	app := NewTestApplication()
+	app := NewTestApplication(t)
 	app.SecureHeaders(next).ServeHTTP(recorder, r)
-	helpers.Equal(t, recorder.Code, http.StatusOK)
-	helpers.Equal(t, recorder.Body.String(), "OK")
-	helpers.Equal(
+	assert.Equal(t, recorder.Code, http.StatusOK)
+	assert.Equal(t, recorder.Body.String(), "OK")
+	assert.Equal(
 		t, recorder.Header().Get("Content-Security-Policy"),
 	 	"default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com",
 	)
-	helpers.Equal(t, recorder.Header().Get("Referrer-Policy"), "origin-when-cross-origin")
-	helpers.Equal(t, recorder.Header().Get("X-Content-Type-Options"), "nosniff")
-	helpers.Equal(t, recorder.Header().Get("X-Frame-Options"), "deny")
-	helpers.Equal(t, recorder.Header().Get("X-XSS-Protection"), "0")
+	assert.Equal(t, recorder.Header().Get("Referrer-Policy"), "origin-when-cross-origin")
+	assert.Equal(t, recorder.Header().Get("X-Content-Type-Options"), "nosniff")
+	assert.Equal(t, recorder.Header().Get("X-Frame-Options"), "deny")
+	assert.Equal(t, recorder.Header().Get("X-XSS-Protection"), "0")
 }

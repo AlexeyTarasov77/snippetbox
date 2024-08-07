@@ -21,6 +21,7 @@ func (app *Application) AuthMiddleware(next http.Handler) http.Handler {
 			var user *models.User
 			user, err := app.users.Get(userId)
 			if err != nil {
+				app.logger.Warn("Error getting user", "err", err.Error())
 				user = nil
 			}
 			r = r.WithContext(context.WithValue(r.Context(), constants.UserCtxKey, user))

@@ -74,9 +74,9 @@ func (app *Application) snippetView(w http.ResponseWriter, r *http.Request) {
 	snippet, err := app.snippets.Get(idInt)
 	if err != nil {
 		if errors.Is(err, storage.ErrNoRecord) {
-			http.Error(w, "Snippet not found", http.StatusNotFound)
+			response.HttpError(w, "", http.StatusNotFound)
 		} else {
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			response.HttpError(w, "")
 		}
 		return
 	}
@@ -120,6 +120,7 @@ func (app *Application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 	id, err := app.users.Insert(form.Username, form.Email, form.Password)
 	if err != nil {
 		if errors.Is(err, storage.ErrDuplicateEmail) {
+			app.logger.Info("Duplicate email", "email", form.Email)
 			form.FieldErrors["email"] = "Address is already in use"
 			rerenderTemplate(form)
 			return
