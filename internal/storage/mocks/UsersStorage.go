@@ -130,6 +130,24 @@ func (_m *UsersStorage) Insert(username string, email string, password string) (
 	return r0, r1
 }
 
+// Update provides a mock function with given fields: user
+func (_m *UsersStorage) Update(user *models.User) error {
+	ret := _m.Called(user)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*models.User) error); ok {
+		r0 = rf(user)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // NewUsersStorage creates a new instance of UsersStorage. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewUsersStorage(t interface {

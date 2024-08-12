@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"snippetbox.proj.net/internal/api/forms"
 	"snippetbox.proj.net/internal/storage/models"
 	"snippetbox.proj.net/ui"
 )
@@ -42,6 +43,7 @@ func humanDate(t time.Time) string {
 
 var funcMap = template.FuncMap{
 	"humanDate": humanDate,
+	"isRequiredFormField": forms.IsRequiredField,
 }
 
 func NewTemplateCache() (map[string]*template.Template, error) {
@@ -67,26 +69,3 @@ func NewTemplateCache() (map[string]*template.Template, error) {
 	}
 	return cache, nil
 }
-
-
-// htmlfiles paths should be specified relative to ui/html dir
-// func RenderTemplate(w http.ResponseWriter, data any, htmlfiles ...string) {
-// 	baseFileName := strings.Replace(htmlfiles[0], ".html", "", 1)
-// 	for i := range htmlfiles {
-// 		htmlfiles[i] = "ui/html/" + htmlfiles[i]
-// 	}
-// 	parsed, err := template.ParseFiles(htmlfiles...)
-// 	if err != nil {
-// 		slog.Error("Error parsing template", "msg", err)
-// 		response := response.Error("Error parsing template")
-// 		http.Error(w, response.Error, response.Status)
-// 		return
-// 	}
-// 	parsed.ExecuteTemplate(w, baseFileName, data)
-// }
-
-
-// Shortcut for render template including base and partials
-// func RenderPage(w http.ResponseWriter, data any, htmlfile string) {
-// 	RenderTemplate(w, data, "base.html", htmlfile, "partials/nav.html")
-// }

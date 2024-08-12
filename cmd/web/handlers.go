@@ -7,10 +7,12 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/crypto/bcrypt"
 	"snippetbox.proj.net/internal/api/constants"
 	"snippetbox.proj.net/internal/api/forms"
 	"snippetbox.proj.net/internal/api/response"
 	"snippetbox.proj.net/internal/storage"
+	"snippetbox.proj.net/internal/storage/models"
 )
 
 
@@ -98,11 +100,6 @@ func (app *Application) userSignup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) userSignupPost(w http.ResponseWriter, r *http.Request) {
-	rerenderTemplate := func(form forms.UserSignupForm) {
-		data := app.newTemplateData(r)
-		data.Form = form
-		app.render(w, "signup.html", data, http.StatusUnprocessableEntity)
-	}
 	if err := r.ParseForm(); err != nil {
 		app.logger.Error("Error parsing form", "err", err.Error())
 		response.HttpError(w, "", http.StatusBadRequest)
@@ -115,7 +112,7 @@ func (app *Application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !form.IsValid(form) {
-		rerenderTemplate(form)
+		app.rerenderInvalidForm(w, r, form, "signup.html")
 		return
 	}
 	id, err := app.users.Insert(form.Username, form.Email, form.Password)
@@ -123,7 +120,7 @@ func (app *Application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, storage.ErrDuplicateEmail) {
 			app.logger.Info("Duplicate email", "email", form.Email)
 			form.FieldErrors["email"] = "Address is already in use"
-			rerenderTemplate(form)
+			app.rerenderInvalidForm(w, r, form, "signup.html")
 			return
 		}
 		app.logger.Error("Error inserting user", "err", err.Error())
@@ -162,18 +159,14 @@ func (app *Application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	}
 	if !form.IsValid(form) {
 		app.logger.Debug("Form is not valid", "formErrors", form.FieldErrors, "formData", form)
-		data := app.newTemplateData(r)
-		data.Form = form
-		app.render(w, "login.html", data, http.StatusUnprocessableEntity)
+		app.rerenderInvalidForm(w, r, form, "login.html")
 		return
 	}
 	user, err := app.users.Authenticate(form.Email, form.Password)
 	if errors.Is(err, storage.ErrInvalidCredentials) {
 		app.logger.Info("Invalid credentials provided", "err", err.Error(), "formData", form)
 		form.NonFieldErrors = append(form.NonFieldErrors, "Invalid email or password")
-		data := app.newTemplateData(r)
-		data.Form = form
-		app.render(w, "login.html", data, http.StatusUnprocessableEntity)
+		app.rerenderInvalidForm(w, r, form, "login.html")
 		return
 	}
 	app.sessionManager.RenewToken(r.Context())
@@ -200,6 +193,54 @@ func (app *Application) accountView(w http.ResponseWriter, r *http.Request) {
 	}
 	data.Snippets = userSnippets
 	app.render(w, "account.html", data)
+}
+
+func (app *Application) accountPasswordUpdate(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	data.Form = forms.UserPasswordUpdateForm{}
+	app.render(w, "password-update.html", data)
+}
+
+func (app *Application) accountPasswordUpdatePost(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		app.logger.Error("Error parsing form", "err", err.Error())
+		response.HttpError(w, "", http.StatusBadRequest)
+		return
+	}
+	app.logger.Debug("Form parsed", "data", r.PostForm)
+	var form forms.UserPasswordUpdateForm
+	if err := app.formDecoder.Decode(&form, r.PostForm); err != nil {
+		app.logger.Error("Error decoding form", "err", err.Error())
+		response.HttpError(w, "", http.StatusBadRequest)
+		return
+	}
+	if !form.IsValid(form) {
+		app.logger.Debug("Form is not valid", "formData", form)
+		app.rerenderInvalidForm(w, r, form, "password-update.html")
+		return
+	}
+	currUser := r.Context().Value(constants.UserCtxKey).(*models.User)
+	_, err := app.users.Authenticate(currUser.Email, form.CurrentPassword)
+	if errors.Is(err, storage.ErrInvalidCredentials) {
+		app.logger.Info("Invalid credentials provided", "err", err.Error(), "formData", form)
+		form.NonFieldErrors = append(form.NonFieldErrors, "Invalid credentials")
+		app.rerenderInvalidForm(w, r, form, "password-update.html")
+		return
+	}
+	newPasswordHash, err := bcrypt.GenerateFromPassword([]byte(form.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		app.logger.Error("Error hashing password", "err", err.Error())
+		response.HttpError(w, "")
+		return
+	}
+	currUser.Password = newPasswordHash
+	if err := app.users.Update(currUser); err != nil {
+		app.logger.Error("Error updating user", "err", err.Error())
+		response.HttpError(w, "")
+		return
+	}
+	app.sessionManager.Put(r.Context(), string(constants.FlashCtxKey), "Password successfully updated!")
+	http.Redirect(w, r, "/user/account", http.StatusSeeOther)
 }
 
 func (app *Application) about(w http.ResponseWriter, r *http.Request) {

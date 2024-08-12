@@ -8,6 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	validatorErrs "snippetbox.proj.net/internal/lib/validator"
+	"snippetbox.proj.net/internal/utils"
 )
 
 type BaseForm struct {
@@ -20,7 +21,8 @@ func (bf *BaseForm) Validate(form any) {
 	bf.FieldErrors = make(map[string]string)
 	if err := validate.Struct(form); err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
-			bf.FieldErrors[strings.ToLower(e.StructField())] = validatorErrs.GetErrorMsgForField(form, e)
+			fieldName := utils.ConvertCamelToSnake(e.StructField())
+			bf.FieldErrors[fieldName] = validatorErrs.GetErrorMsgForField(form, e)
 		}
 	}
 }
@@ -38,5 +40,5 @@ func IsRequiredField(form any, fieldName string) bool {
 	if !found {
 		panic(fmt.Sprintf("Field %s not found in type %s", fieldName, reflect.TypeOf(form).Name()))
 	}
-	return field.Tag.Get("required") != ""
+	return strings.Contains(field.Tag.Get("validate"), "required")
 }

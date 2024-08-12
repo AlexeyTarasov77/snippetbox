@@ -15,6 +15,10 @@
             <th>Created</th>
             <td>{{humanDate .User.Created}}</td>
         </tr>
+        <tr>
+            <th>Password</th>
+            <td><a href="/user/account/password/update">Change</a></td>
+        </tr>
     </table>
     {{with .Snippets}}
         <div style="margin-top: 10%;">

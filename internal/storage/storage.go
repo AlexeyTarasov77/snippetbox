@@ -17,4 +17,5 @@ type UsersStorage interface {
 	Authenticate(email, password string) (*models.User, error)
 	GetByEmail(email string) (*models.User, error)
 	Get(id int) (*models.User, error)
+	Update(user *models.User) error
 }

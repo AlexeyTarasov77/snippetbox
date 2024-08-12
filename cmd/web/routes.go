@@ -35,6 +35,8 @@ func (app *Application) routes() *chi.Mux {
 			router.Route("/account", func(router chi.Router) {
 				router.Use(app.LoginRequiredMiddleware())
 				router.Get("/", app.accountView)
+				router.Get("/password/update", app.accountPasswordUpdate)
+				router.Post("/password/update", app.accountPasswordUpdatePost)
 			})
 			router.With(
 				app.LoginRequiredMiddleware(),

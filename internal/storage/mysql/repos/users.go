@@ -15,7 +15,7 @@ type UserModel struct {
 }
 
 func (model *UserModel) Insert(username, email, password string) (int64, error) {
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, err
 	}
@@ -45,7 +45,10 @@ func (model *UserModel) Authenticate(email, password string) (*models.User, erro
 		return nil, err
 	}
 	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(password)); err != nil {
-		return nil, storage.ErrInvalidCredentials
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return nil, storage.ErrInvalidCredentials
+		}
+		return nil, err
 	}
 	return user, nil
 }
@@ -75,4 +78,17 @@ func (model *UserModel) Get(id int) (*models.User, error) {
 		"SELECT id, username, email, password, created, is_active FROM users WHERE id = ? AND is_active = 1",
 		id,
 	)
+}
+
+func (model *UserModel) Update(user *models.User) error {
+	stmt := `UPDATE users SET username = ?, email = ?, password = ?, is_active = ? WHERE id = ?`
+	_, err := model.DB.Exec(stmt, user.Username, user.Email, user.Password, user.IsActive, user.ID)
+	if err != nil {
+		var mySQLErr *mysql.MySQLError
+		if errors.As(err, &mySQLErr) && mySQLErr.Number == 1062 {
+			return storage.ErrDuplicateEmail
+		}
+		return err
+	}
+	return err
 }

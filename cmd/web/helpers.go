@@ -35,6 +35,17 @@ func (app *Application) render(
 	buffer.WriteTo(w)
 }
 
+func (app *Application) rerenderInvalidForm(
+	w http.ResponseWriter,
+	r *http.Request,
+	form any,
+	templateName string,
+) {
+	data := app.newTemplateData(r)
+	data.Form = form
+	app.render(w, templateName, data, http.StatusUnprocessableEntity)
+}
+
 func (app *Application) newTemplateData(r *http.Request) *templates.TemplateData {
 	user, ok := r.Context().Value(constants.UserCtxKey).(*models.User)
 	if !ok {

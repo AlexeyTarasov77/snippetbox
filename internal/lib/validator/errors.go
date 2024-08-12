@@ -36,6 +36,20 @@ func GetErrorMsgForField(obj any, err go_validator.FieldError) (errorMsg string)
 			errorMsg = fmt.Sprintf("Value should be greater than or equal to %s", err.Param())
 		case "lte":
 			errorMsg = fmt.Sprintf("Value should be less than or equal to %s", err.Param())
+		case "lt":
+			errorMsg = fmt.Sprintf("Value should be less than %s", err.Param())
+		case "gt":
+			errorMsg = fmt.Sprintf("Value should be greater than %s", err.Param())
+		case "eqfield", "eq":
+			errorMsg = fmt.Sprintf("Value should be equal to %s", err.Param())
+		case "nefield", "ne":
+			errorMsg = fmt.Sprintf("Value should not be equal to %s", err.Param())
+		case "oneof":
+			errorMsg = fmt.Sprintf("Value should be one of %s", err.Param())
+		case "nooneof":
+			errorMsg = fmt.Sprintf("Value should not be one of %s", err.Param())
+		case "len":
+			errorMsg = fmt.Sprintf("Length should be equal to %s", err.Param())
 		default:
 			errorMsg = "This field is invalid"
 		}
