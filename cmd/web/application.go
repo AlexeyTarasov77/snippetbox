@@ -20,6 +20,7 @@ type Application struct {
 	templateCache map[string]*template.Template
 	formDecoder       *schema.Decoder
 	sessionManager *scs.SessionManager
+	debug          bool
 }
 
 func NewApplication(
@@ -28,6 +29,7 @@ func NewApplication(
 	users storage.UsersStorage,
 	templateCache map[string]*template.Template, 
 	sessionManager *scs.SessionManager,
+	debug bool,
 ) *Application {
 	decoder := schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)
@@ -38,6 +40,7 @@ func NewApplication(
 		templateCache: templateCache,
 		formDecoder:   decoder,
 		sessionManager: sessionManager,
+		debug:         debug,
 	}
 }
 
@@ -57,5 +60,6 @@ func NewTestApplication(t testing.TB) *Application {
 		templateCache: tc,
 		formDecoder: decoder,
 		sessionManager: sessionManager,
+		debug: true,
 	}
 }

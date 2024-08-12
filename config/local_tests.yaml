@@ -1,9 +1,9 @@
 mode: "local"
 
 db:
-  user: web
-  password: web
-  name: snippetbox
+  user: web_test
+  password: web_test
+  name: snippetbox_test
   host: localhost
   port: 3306
 

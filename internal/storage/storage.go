@@ -5,7 +5,7 @@ import "snippetbox.proj.net/internal/storage/models"
 
 //go:generate mockery --name=SnippetsStorage
 type SnippetsStorage interface {
-	Insert(title, content string, expires int) (int64, error)
+	Insert(title, content string, expires int, userID int) (int64, error)
 	Get(id int) (*models.Snippet, error)
 	Latest(n int) ([]*models.Snippet, error)
 }

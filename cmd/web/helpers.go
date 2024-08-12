@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/justinas/nosurf"
+	"snippetbox.proj.net/internal/api/constants"
 	"snippetbox.proj.net/internal/api/response"
 	"snippetbox.proj.net/internal/storage/models"
 	"snippetbox.proj.net/internal/templates"
-	"github.com/justinas/nosurf"
 )
 
 func (app *Application) render(
@@ -35,7 +36,7 @@ func (app *Application) render(
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templates.TemplateData {
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := r.Context().Value(constants.UserCtxKey).(*models.User)
 	if !ok {
 		user = nil
 	}

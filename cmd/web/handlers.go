@@ -45,7 +45,8 @@ func (app *Application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		app.render(w, "create.html", data, http.StatusUnprocessableEntity)
 		return
 	}
-	snippetID, err := app.snippets.Insert(form.Title, form.Content, form.Expires)
+	currUserID := app.sessionManager.GetInt(r.Context(), string(constants.UserIDCtxKey))
+	snippetID, err := app.snippets.Insert(form.Title, form.Content, form.Expires, currUserID)
 	if err != nil {
 		app.logger.Error("Error inserting snippet", "err", err.Error())
 		response.HttpError(w, "", http.StatusInternalServerError)
@@ -183,6 +184,11 @@ func (app *Application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	)
 	app.sessionManager.Put(r.Context(), string(constants.UserIDCtxKey), user.ID)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (app *Application) about(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	app.render(w, "about.html", data)
 }
 
 func (app *Application) ping(w http.ResponseWriter, r *http.Request) {

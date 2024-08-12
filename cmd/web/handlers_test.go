@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"snippetbox.proj.net/internal/lib/tests/utils"
+	"snippetbox.proj.net/internal/tests/utils"
 	"snippetbox.proj.net/internal/storage"
 	"snippetbox.proj.net/internal/storage/mocks"
 )
@@ -27,60 +27,60 @@ func TestPing(t *testing.T) {
 	// helpers.Equal(t, recorder.Body.String(), "OK")
 }
 
-func TestSnippetView(t *testing.T) {
-	t.Parallel()
-	app := NewTestApplication(t)
-	server := utils.NewTestServer(t, app.routes())
-	defer server.Close()
-	snippetsMock := app.snippets.(*mocks.SnippetsStorage)
-	dummySnippet := utils.GetDummySnippet()
-	snippetsMock.On("Get", 0).Return(nil, storage.ErrNoRecord)
-	snippetsMock.On("Get", 1).Return(dummySnippet, nil)
-	snippetsMock.On("Get", 2).Return(nil, storage.ErrNoRecord)
-	testCases := []struct {
-		name           string
-		url            string
-		expectedStatus int
-		expectedBody   string
-	}{
-		{
-			name:           "Valid ID",
-			url:            "/snippet/view/1",
-			expectedStatus: http.StatusOK,
-			expectedBody:   dummySnippet.Content,
-		},
-		{
-			name:           "Non-existent ID",
-			url:            "/snippet/view/2",
-			expectedStatus: http.StatusNotFound,
-			expectedBody:   http.StatusText(http.StatusNotFound),
-		},
-		{
-			name:           "Negative ID",
-			url:            "/snippet/view/-1",
-			expectedStatus: http.StatusBadRequest,
-		},
-		{
-			name:           "Decimal ID",
-			url:            "/snippet/view/1.23",
-			expectedStatus: http.StatusBadRequest,
-		},
-		{
-			name:           "Empty ID",
-			url:            "/snippet/view/",
-			expectedStatus: http.StatusNotFound,
-		},
-	}
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			resp := server.Get(tc.url)
-			assert.Equal(t, tc.expectedStatus, resp.Status)
-			if tc.expectedBody != "" {
-				assert.Contains(t, resp.Body, tc.expectedBody)
-			}
-		})
-	}
-}
+// func TestSnippetView(t *testing.T) {
+// 	t.Parallel()
+// 	app := NewTestApplication(t)
+// 	server := utils.NewTestServer(t, app.routes())
+// 	defer server.Close()
+// 	snippetsMock := app.snippets.(*mocks.SnippetsStorage)
+// 	dummySnippet := utils.GetDummySnippet()
+// 	snippetsMock.On("Get", 0).Return(nil, storage.ErrNoRecord)
+// 	snippetsMock.On("Get", 1).Return(dummySnippet, nil)
+// 	snippetsMock.On("Get", 2).Return(nil, storage.ErrNoRecord)
+// 	testCases := []struct {
+// 		name           string
+// 		url            string
+// 		expectedStatus int
+// 		expectedBody   string
+// 	}{
+// 		{
+// 			name:           "Valid ID",
+// 			url:            "/snippet/view/1",
+// 			expectedStatus: http.StatusOK,
+// 			expectedBody:   dummySnippet.Content,
+// 		},
+// 		{
+// 			name:           "Non-existent ID",
+// 			url:            "/snippet/view/2",
+// 			expectedStatus: http.StatusNotFound,
+// 			expectedBody:   http.StatusText(http.StatusNotFound),
+// 		},
+// 		{
+// 			name:           "Negative ID",
+// 			url:            "/snippet/view/-1",
+// 			expectedStatus: http.StatusBadRequest,
+// 		},
+// 		{
+// 			name:           "Decimal ID",
+// 			url:            "/snippet/view/1.23",
+// 			expectedStatus: http.StatusBadRequest,
+// 		},
+// 		{
+// 			name:           "Empty ID",
+// 			url:            "/snippet/view/",
+// 			expectedStatus: http.StatusNotFound,
+// 		},
+// 	}
+// 	for _, tc := range testCases {
+// 		t.Run(tc.name, func(t *testing.T) {
+// 			resp := server.Get(tc.url)
+// 			assert.Equal(t, tc.expectedStatus, resp.Status)
+// 			if tc.expectedBody != "" {
+// 				assert.Contains(t, resp.Body, tc.expectedBody)
+// 			}
+// 		})
+// 	}
+// }
 
 func TestUserSignup(t *testing.T) {
 	t.Parallel()

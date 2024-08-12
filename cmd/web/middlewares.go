@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"runtime/debug"
 
 	"github.com/justinas/nosurf"
 	"snippetbox.proj.net/internal/api/constants"
@@ -70,7 +72,13 @@ func (app *Application) Recoverer(next http.Handler) http.Handler {
 			defer func() {
 				if err := recover(); err != nil {
 					app.logger.Error("Recovered from panic", "msg", err)
-					response.HttpError(w, "")
+					trace := fmt.Sprintf("%s\n%s", err, debug.Stack())
+					app.logger.Error("Stack trace", "msg", trace)
+					errMsg := ""
+					if app.debug {
+						errMsg = trace
+					}
+					response.HttpError(w, errMsg)
 				}
 			}()
 			next.ServeHTTP(w, r)

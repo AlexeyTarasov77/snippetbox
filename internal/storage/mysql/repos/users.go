@@ -50,8 +50,8 @@ func (model *UserModel) Authenticate(email, password string) (*models.User, erro
 	return user, nil
 }
 
-func (model *UserModel) GetByEmail(email string) (*models.User, error) {
-	res := model.DB.QueryRow("SELECT id, username, email, password, created, is_active FROM users WHERE email = ? AND is_active = 1", email)
+func (model *UserModel) getUser (query string, params ...any) (*models.User, error) {
+	res := model.DB.QueryRow(query, params...)
 	var user models.User
 	err := res.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Created, &user.IsActive)
 	if err != nil {
@@ -63,15 +63,16 @@ func (model *UserModel) GetByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
+func (model *UserModel) GetByEmail(email string) (*models.User, error) {
+	return model.getUser(
+		"SELECT id, username, email, password, created, is_active FROM users WHERE email = ? AND is_active = 1",
+		email,
+	)
+}
+
 func (model *UserModel) Get(id int) (*models.User, error) {
-	res := model.DB.QueryRow("SELECT id, username, email, password, created, is_active FROM users WHERE id = ? AND is_active = 1", id)
-	var user models.User
-	err := res.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Created, &user.IsActive)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, storage.ErrNoRecord
-		}
-		return nil, err
-	}
-	return &user, nil
+	return model.getUser(
+		"SELECT id, username, email, password, created, is_active FROM users WHERE id = ? AND is_active = 1",
+		id,
+	)
 }

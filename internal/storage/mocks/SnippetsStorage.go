@@ -42,9 +42,9 @@ func (_m *SnippetsStorage) Get(id int) (*models.Snippet, error) {
 	return r0, r1
 }
 
-// Insert provides a mock function with given fields: title, content, expires
-func (_m *SnippetsStorage) Insert(title string, content string, expires int) (int64, error) {
-	ret := _m.Called(title, content, expires)
+// Insert provides a mock function with given fields: title, content, expires, userID
+func (_m *SnippetsStorage) Insert(title string, content string, expires int, userID int) (int64, error) {
+	ret := _m.Called(title, content, expires, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Insert")
@@ -52,17 +52,17 @@ func (_m *SnippetsStorage) Insert(title string, content string, expires int) (in
 
 	var r0 int64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, string, int) (int64, error)); ok {
-		return rf(title, content, expires)
+	if rf, ok := ret.Get(0).(func(string, string, int, int) (int64, error)); ok {
+		return rf(title, content, expires, userID)
 	}
-	if rf, ok := ret.Get(0).(func(string, string, int) int64); ok {
-		r0 = rf(title, content, expires)
+	if rf, ok := ret.Get(0).(func(string, string, int, int) int64); ok {
+		r0 = rf(title, content, expires, userID)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
-	if rf, ok := ret.Get(1).(func(string, string, int) error); ok {
-		r1 = rf(title, content, expires)
+	if rf, ok := ret.Get(1).(func(string, string, int, int) error); ok {
+		r1 = rf(title, content, expires, userID)
 	} else {
 		r1 = ret.Error(1)
 	}

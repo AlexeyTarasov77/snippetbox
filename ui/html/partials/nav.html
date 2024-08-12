@@ -1,8 +1,9 @@
 {{define "nav"}}
  <nav>
     <a href='/'>Home</a>
-    <a href="/snippet/create">New snippet</a>
+    <a href="/about">About</a>
     {{if .User}}
+    <a href="/snippet/create">New snippet</a>
     <form action="/user/logout" method="post">
        <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
        <button class="nav-item">Logout</button>

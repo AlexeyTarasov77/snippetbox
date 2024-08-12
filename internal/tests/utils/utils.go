@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"database/sql"
+	"fmt"
 	"html"
 	"io"
 	"math/rand"
@@ -8,10 +10,13 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
+	"os/exec"
 	"regexp"
 	"testing"
 	"time"
 
+	"github.com/bxcodec/faker/v4"
+	"snippetbox.proj.net/internal/config"
 	"snippetbox.proj.net/internal/storage/models"
 )
 
@@ -24,6 +29,41 @@ type TestResponse struct {
 	Status int
 	Body   string
 	Headers http.Header
+}
+
+func NewTestDB(t *testing.T) *sql.DB {
+	workDir := "/Users/alexeytarasov/Desktop/golang/src/books/lets-go/snippetbox"
+	cfg, err := config.Load(workDir + "/config/local_tests.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := sql.Open("mysql", fmt.Sprintf(
+		"%s:%s@tcp(%s:%d)/%s?parseTime=true",
+		cfg.DB.User,
+		cfg.DB.Password,
+		cfg.DB.Host,
+		cfg.DB.Port,
+		cfg.DB.Name,
+	))
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command("make", "migrate-test", "direction=up")
+	cmd.Dir = workDir
+	// output, _ := cmd.CombinedOutput()
+	// println(string(output))
+	if err := cmd.Run(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		db.Close()
+		cmd = exec.Command("make", "migrate-test", "direction=down", "flags=-all")
+		cmd.Dir = workDir
+		if err := cmd.Run(); err != nil {
+			t.Fatal(err)
+		}
+	})
+	return db
 }
 
 func NewTestServer(t *testing.T, handler http.Handler) *testServer {
@@ -78,10 +118,10 @@ func ExtractCSRFToken(t *testing.T, body string) string {
 
 func GetDummyUser() *models.User {
 	return &models.User{
-		ID:       rand.Int() + 1,
-		Username: "foo",
-		Email:    "NwJt2@example.com",
-		Password: []byte("Pa$$w0rd"),
+		ID:       rand.Intn(1000) + 1,
+		Username: faker.Username(),
+		Email:    faker.Email(),
+		Password: []byte(faker.Password()),
 		Created:  time.Now(),
 		IsActive: true,
 	}
@@ -89,9 +129,9 @@ func GetDummyUser() *models.User {
 
 func GetDummySnippet() *models.Snippet {
 	return &models.Snippet{
-		ID:      rand.Int() + 1,
-		Title:   "foo",
-		Content: "bar",
+		ID:      rand.Intn(1000) + 1,
+		Title:   faker.Word(),
+		Content: faker.Sentence(),
 		Created: time.Now(),
 		Expires: time.Now().Add(time.Hour * 24),
 	}

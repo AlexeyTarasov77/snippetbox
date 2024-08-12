@@ -18,6 +18,7 @@ func (app *Application) routes() *chi.Mux {
 		router.Use(app.AuthMiddleware)
 		router.Use(app.NoSurfMiddleware)
 		router.Get("/", app.home)
+		router.Get("/about", app.about)
 		router.Route("/snippet", func(router chi.Router) {
 			router.Route("/", func(router chi.Router) { // protected routes
 				router.Use(app.LoginRequiredMiddleware())
