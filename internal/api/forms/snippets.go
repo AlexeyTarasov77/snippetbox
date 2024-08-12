@@ -1,5 +1,6 @@
 package forms
 
+
 type SnippetCreateForm struct {
 	Title string `schema:"title, required" validate:"required,max=100"`
 	Content string `schema:"content, required" validate:"required"`

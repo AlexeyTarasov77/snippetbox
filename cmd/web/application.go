@@ -3,7 +3,6 @@ package main
 import (
 	"html/template"
 	"log/slog"
-	"os"
 	"testing"
 
 	"github.com/alexedwards/scs/v2"
@@ -54,7 +53,7 @@ func NewTestApplication(t testing.TB) *Application {
 	decoder := schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)
 	return &Application{
-		logger:  slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{})),
+		logger:  setupLogger(),
 		snippets: mocks.NewSnippetsStorage(t),
 		users:   mocks.NewUsersStorage(t),
 		templateCache: tc,

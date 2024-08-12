@@ -32,6 +32,10 @@ func (app *Application) routes() *chi.Mux {
 			router.Post("/signup", app.userSignupPost)
 			router.Get("/login", app.userLogin)
 			router.Post("/login", app.userLoginPost)
+			router.Route("/account", func(router chi.Router) {
+				router.Use(app.LoginRequiredMiddleware())
+				router.Get("/", app.accountView)
+			})
 			router.With(
 				app.LoginRequiredMiddleware(),
 			).Post("/logout", app.userLogoutPost)

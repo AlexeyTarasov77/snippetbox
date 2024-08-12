@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"snippetbox.proj.net/internal/config"
+	"snippetbox.proj.net/internal/lib/logger/handlers/slogpretty"
 	"snippetbox.proj.net/internal/storage/mysql"
 	"snippetbox.proj.net/internal/storage/mysql/repos"
 	"snippetbox.proj.net/internal/templates"
@@ -85,7 +86,13 @@ func main() {
 }
 
 func setupLogger() *slog.Logger {
-	return slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
-	}))
+	opts := slogpretty.PrettyHandlerOptions{
+		SlogOpts: &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		},
+	}
+
+	handler := opts.NewPrettyHandler(os.Stdout)
+
+	return slog.New(handler)
 }

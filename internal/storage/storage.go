@@ -8,6 +8,7 @@ type SnippetsStorage interface {
 	Insert(title, content string, expires int, userID int) (int64, error)
 	Get(id int) (*models.Snippet, error)
 	Latest(n int) ([]*models.Snippet, error)
+	GetByUserID(userID int) ([]*models.Snippet, error)
 }
 
 //go:generate mockery --name=UsersStorage

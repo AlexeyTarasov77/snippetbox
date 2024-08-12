@@ -19,4 +19,4 @@ migrate-test:
 	-path=/migrations -database "mysql://web_test:web_test@tcp(docker.for.mac.localhost:3306)/snippetbox_test" $(direction) $(flags)
 
 run:
-	go run ./cmd/web -config="./config/local.yaml"
+	go run ./cmd/web -config="./config/local.yaml" -debug

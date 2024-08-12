@@ -43,6 +43,11 @@ func (app *Application) LoginRequiredMiddleware(_shouldRedirect ...bool) func(ne
 				}
 				if userId == 0 {
 					if shouldRedirect {
+						app.sessionManager.Put(
+							r.Context(),
+							string(constants.RedirectCtxKey),
+							r.URL.String(),
+						)
 						http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 					} else {
 						response.HttpError(w, "", http.StatusUnauthorized)

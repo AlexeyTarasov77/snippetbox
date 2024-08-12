@@ -4,6 +4,7 @@
     <a href="/about">About</a>
     {{if .User}}
     <a href="/snippet/create">New snippet</a>
+    <a href="/user/account">Account</a>
     <form action="/user/logout" method="post">
        <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
        <button class="nav-item">Logout</button>

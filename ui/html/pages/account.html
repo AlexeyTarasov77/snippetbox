@@ -1,0 +1,37 @@
+{{define "title"}}Account - {{.User.Username}}{{end}}
+
+{{define "main"}}
+    <h2>Your Account</h2>
+    <table>
+        <tr>
+            <th>Username</th>
+            <td>{{.User.Username}}</td>
+        </tr>
+        <tr>
+            <th>Email</th>
+            <td>{{.User.Email}}</td>
+        </tr>
+        <tr>
+            <th>Created</th>
+            <td>{{humanDate .User.Created}}</td>
+        </tr>
+    </table>
+    {{with .Snippets}}
+        <div style="margin-top: 10%;">
+            <h3>Your Snippets</h3>
+            {{range .}}
+            <div class='snippet'>
+                <div class='metadata'>
+                    <strong>{{.Title}}</strong>
+                    <span>#{{.ID}}</span>
+                </div>
+                <pre><code>{{.Content}}</code></pre>
+                <div class='metadata'>
+                    <time>Created: {{humanDate .Created}}</time>
+                    <time>Expires: {{humanDate .Expires}}</time>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    {{end}}
+{{end}}

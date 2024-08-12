@@ -42,6 +42,36 @@ func (_m *SnippetsStorage) Get(id int) (*models.Snippet, error) {
 	return r0, r1
 }
 
+// GetByUserID provides a mock function with given fields: userID
+func (_m *SnippetsStorage) GetByUserID(userID int) ([]*models.Snippet, error) {
+	ret := _m.Called(userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByUserID")
+	}
+
+	var r0 []*models.Snippet
+	var r1 error
+	if rf, ok := ret.Get(0).(func(int) ([]*models.Snippet, error)); ok {
+		return rf(userID)
+	}
+	if rf, ok := ret.Get(0).(func(int) []*models.Snippet); ok {
+		r0 = rf(userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Snippet)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Insert provides a mock function with given fields: title, content, expires, userID
 func (_m *SnippetsStorage) Insert(title string, content string, expires int, userID int) (int64, error) {
 	ret := _m.Called(title, content, expires, userID)

@@ -17,8 +17,8 @@ import (
 func (app *Application) home(w http.ResponseWriter, r *http.Request) {
 	latestSnippets, err := app.snippets.Latest(10)
 	if err != nil && !errors.Is(err, storage.ErrNoRecord) {
-		response := response.Error("Database error")
-		http.Error(w, response.Error, response.Status)
+		app.logger.Error("Error getting latest snippets", "err", err.Error())
+		response.HttpError(w, "Database error")
 		return
 	}
 	data := app.newTemplateData(r)
@@ -183,7 +183,23 @@ func (app *Application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 		fmt.Sprintf("Hello, %s! You've login succesfully", user.Username),
 	)
 	app.sessionManager.Put(r.Context(), string(constants.UserIDCtxKey), user.ID)
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	redirectPath := app.sessionManager.PopString(r.Context(), string(constants.RedirectCtxKey))
+	if redirectPath == "" {
+		redirectPath = "/user/account"
+	}
+	http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+}
+
+func (app *Application) accountView(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	userSnippets, err := app.snippets.GetByUserID(data.User.ID)
+	if err != nil && !errors.Is(err, storage.ErrNoRecord) {
+		app.logger.Error("Error getting user snippets", "err", err.Error())
+		response.HttpError(w, "")
+		return
+	}
+	data.Snippets = userSnippets
+	app.render(w, "account.html", data)
 }
 
 func (app *Application) about(w http.ResponseWriter, r *http.Request) {
